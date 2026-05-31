@@ -12,10 +12,10 @@ version = "1.0.0"
 [[services]]
 name = "web"
 paths = [ "/" ]
-localPort = 25902
+localPort = 3001
 
 [services.development]
-run = "pnpm --filter @workspace/swift-africa run dev"
+run = "PORT=3001 BASE_PATH=/ pnpm --filter @workspace/swift-africa run dev"
 
 [services.production]
 build = [ "pnpm", "--filter", "@workspace/swift-africa", "run", "build" ]
@@ -27,5 +27,5 @@ from = "/*"
 to = "/index.html"
 
 [services.env]
-PORT = "25902"
+PORT = "3001"
 BASE_PATH = "/"
