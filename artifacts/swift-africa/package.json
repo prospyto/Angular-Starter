@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "NG_CLI_ANALYTICS=false ng serve --port $PORT --host 0.0.0.0",
+    "dev": "NG_CLI_ANALYTICS=false ng serve --port $PORT --host 0.0.0.0 --allowed-hosts all",
     "build": "ng build --output-path dist/public",
     "typecheck": "tsc -p tsconfig.app.json --noEmit"
   },
