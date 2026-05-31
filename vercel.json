@@ -1,5 +1,16 @@
 {
   "buildCommand": "pnpm -w run typecheck:libs && pnpm --filter @workspace/api-server run build",
   "outputDirectory": "artifacts/api-server/dist",
-  "installCommand": "pnpm install"
+  "installCommand": "pnpm install",
+  "functions": {
+    "artifacts/api-server/dist/index.mjs": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "artifacts/api-server/dist/index.mjs"
+    }
+  ]
 }
