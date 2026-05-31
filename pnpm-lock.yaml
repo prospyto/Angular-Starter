@@ -464,9 +464,6 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
-      '@types/node':
-        specifier: ^25.9.1
-        version: 25.9.1
       '@types/pg':
         specifier: ^8.20.0
         version: 8.20.0
