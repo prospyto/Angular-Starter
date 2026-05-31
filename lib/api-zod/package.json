@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@types/node": "^25.3.3",
     "zod": "^3.25.76"
   }
 }

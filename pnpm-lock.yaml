@@ -426,10 +426,13 @@ importers:
         version: 7.3.3(@types/node@25.9.1)
 
   lib/api-client-react:
-    dependencies:
+    devDependencies:
       '@tanstack/react-query':
         specifier: 5.100.9
         version: 5.100.9(react@19.1.0)
+      '@types/node':
+        specifier: ^25.3.3
+        version: 25.9.1
 
   lib/api-spec:
     devDependencies:
@@ -438,7 +441,10 @@ importers:
         version: 8.14.0(prettier@3.8.3)(typescript@5.9.3)
 
   lib/api-zod:
-    dependencies:
+    devDependencies:
+      '@types/node':
+        specifier: ^25.3.3
+        version: 25.9.1
       zod:
         specifier: ^3.25.76
         version: 3.25.76
@@ -459,7 +465,7 @@ importers:
         version: 3.25.76
     devDependencies:
       '@types/node':
-        specifier: ^25.3.3
+        specifier: ^25.9.1
         version: 25.9.1
       '@types/pg':
         specifier: ^8.20.0
@@ -3495,7 +3501,6 @@ packages:
 
   /@tanstack/query-core@5.100.9:
     resolution: {integrity: sha512-SJSFw1S8+kQ0+knv/XGfrbocWoAlT7vDKsSImtLx3ZPQmEcR46hkDjLSvynSy25N8Ms4tIEini1FuBd5k7IscQ==}
-    dev: false
 
   /@tanstack/react-query@5.100.9(react@19.1.0):
     resolution: {integrity: sha512-Oa44XkaI3kCNN6ME0KByU3xT3SEUNOMfZpHxL6+wFoTm+OeUFYHKdeYVe0aOXlRDm/f15sgLwEt2HDorIdW8+A==}
@@ -3504,7 +3509,6 @@ packages:
     dependencies:
       '@tanstack/query-core': 5.100.9
       react: 19.1.0
-    dev: false
 
   /@types/babel__core@7.20.5:
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
