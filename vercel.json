@@ -1,0 +1,5 @@
+{
+  "buildCommand": "pnpm run typecheck:libs && pnpm --filter @workspace/api-server run build",
+  "outputDirectory": "artifacts/api-server/dist",
+  "installCommand": "pnpm install"
+}
