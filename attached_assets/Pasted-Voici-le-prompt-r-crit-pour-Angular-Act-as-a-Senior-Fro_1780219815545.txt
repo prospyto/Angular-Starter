@@ -1,0 +1,300 @@
+Voici le prompt réécrit pour Angular :
+
+---
+
+Act as a Senior Frontend Developer expert in TypeScript, Angular 17+, and Tailwind CSS. Your task is to build a modern, high-end, minimalistic, and lightweight mobile-first web application interface named **"Swift Africa"** (formerly GOPICK).
+
+The app is a premium logistics and furniture delivery platform tailored for the African market. The design must replicate a premium, modern, silicon-valley-like dashboard: clean interface, wide spacing, ample negative space, beautiful light gray/white background combinations, large rounded corners (`rounded-2xl` to `rounded-3xl`), subtle soft shadows, and high scannability.
+
+---
+
+### 🎨 VISUAL IDENTITY & BRANDING
+
+* **Dominant Neutral Background:** Pure White (`#FFFFFF`) for component cards, Ultra Light Gray (`#F8F9FA`) for the global layout background.
+* **Brand Action Color (Primary):** Vibrant Logistics Orange (`#FF6B00`) used for all major active buttons, emphasis, primary actions, and branding indicators.
+* **Status Colors:** Soft Emerald Green (`#2ECC71`) used EXCLUSIVELY for success states, validated indicators, active balances, and positive trust scores.
+* **Typography & Neutrals:** Deep Anthracite Gray (`#1A1D20`) for primary text (never use pure black), Medium Gray (`#6C757D`) for subtitles/placeholders. Font family must be a clean modern Sans-Serif (Inter or DM Sans via Google Fonts).
+
+---
+
+### ⚙️ ANGULAR PROJECT ARCHITECTURE
+
+Use **Angular 17+ Standalone Components** exclusively. No NgModules. Structure the project as follows:
+
+```
+src/
+├── app/
+│   ├── core/
+│   │   ├── services/
+│   │   │   ├── api.service.ts          # Global HttpClient wrapper (apiFetch equivalent)
+│   │   │   ├── auth.service.ts         # JWT storage, user session, role management
+│   │   │   └── toast.service.ts        # Global toast/notification service
+│   │   ├── guards/
+│   │   │   └── auth.guard.ts           # Route protection by role
+│   │   └── interceptors/
+│   │       └── jwt.interceptor.ts      # Auto-append Bearer token to all requests
+│   ├── shared/
+│   │   ├── components/
+│   │   │   ├── shimmer-skeleton/       # Reusable shimmer loading component
+│   │   │   ├── toast-banner/           # Inline error/success toast component
+│   │   │   └── role-card/              # Graphical role selector card
+│   │   └── models/
+│   │       └── entities.model.ts       # All TypeScript interfaces (User, Buyer, Seller, Driver, Product, Order)
+│   ├── features/
+│   │   ├── auth/
+│   │   │   └── auth.component.ts       # SCREEN 1
+│   │   ├── catalog/
+│   │   │   └── catalog.component.ts    # SCREEN 2
+│   │   ├── seller/
+│   │   │   └── seller-dashboard.component.ts  # SCREEN 3
+│   │   └── driver/
+│   │       └── driver-dashboard.component.ts  # SCREEN 4
+│   ├── app.routes.ts                   # Standalone Angular Router config
+│   └── app.config.ts                   # provideHttpClient, provideRouter setup
+```
+
+---
+
+### 🧱 TYPESCRIPT DATA MODELS (`entities.model.ts`)
+
+Define strict TypeScript interfaces matching the Django REST API UUID-based architecture:
+
+```typescript
+export type UUID = string;
+export type OrderStatus = 'pending' | 'accepted' | 'pickup' | 'delivered' | 'cancelled';
+export type MaterialType = 'wood' | 'leather' | 'fabric';
+export type UserRole = 'buyer' | 'seller' | 'driver';
+
+export interface User {
+  id: UUID;
+  name: string;
+  phone: string;
+  status: string;
+  trust_score: number;
+  role: UserRole;
+}
+
+export interface Buyer extends User {
+  address: string;
+  landmarks: string;
+  voice_note?: string; // audio file URL
+}
+
+export interface Seller extends User {
+  store_name: string;
+  store_description: string;
+  wallet_balance: number;
+}
+
+export interface Driver extends User {
+  location: { lat: number; lng: number };
+  earnings_wallet: number;
+  is_available: boolean;
+}
+
+export interface Product {
+  id: UUID;
+  name: string;
+  price: number; // in FCFA
+  material: MaterialType;
+  image_url: string;
+  seller_id: UUID;
+}
+
+export interface Order {
+  id: UUID;
+  buyer_id: UUID;
+  product_id: UUID;
+  driver_id?: UUID;
+  status: OrderStatus;
+  created_at: string;
+}
+```
+
+---
+
+### 🛠️ CORE GLOBAL SERVICES
+
+#### `api.service.ts`
+
+Build a global `ApiService` using Angular's `HttpClient` with:
+
+* All methods returning `Observable<T>` with `catchError` piped via RxJS
+* Exponential backoff retry using `retryWhen` or `retry({ delay })` operator
+* A `loading$: BehaviorSubject<boolean>` signal exposed globally per call
+* Generic typed methods: `get<T>`, `post<T>`, `patch<T>`, `delete<T>`
+
+#### `jwt.interceptor.ts`
+
+A **functional HTTP interceptor** (`HttpInterceptorFn`) that:
+
+* Reads the JWT token from `localStorage` via `AuthService`
+* Appends `Authorization: Bearer <token>` to every outgoing request
+* On `401` response, clears session and redirects to `/auth`
+
+#### `auth.service.ts`
+
+* Stores JWT + user metadata in `localStorage`
+* Exposes `currentUser$: BehaviorSubject<User | null>`
+* Provides `login()`, `register()`, `logout()`, `getRole()` methods
+* After successful auth, uses Angular `Router` to redirect:
+  * `driver` → `/driver`
+  * `seller` → `/seller`
+  * `buyer` → `/catalog`
+
+#### `toast.service.ts`
+
+* Exposes `show(message: string, type: 'success' | 'error' | 'warning')` method
+* Toast auto-dismisses after 3 seconds
+* Injected into `AppComponent` and rendered via `toast-banner` shared component
+
+---
+
+### 🌐 ROUTING (`app.routes.ts`)
+
+```typescript
+export const routes: Routes = [
+  { path: '', redirectTo: 'auth', pathMatch: 'full' },
+  { path: 'auth', loadComponent: () => import('./features/auth/auth.component').then(m => m.AuthComponent) },
+  { path: 'catalog', loadComponent: () => import('./features/catalog/catalog.component').then(m => m.CatalogComponent), canActivate: [authGuard] },
+  { path: 'seller', loadComponent: () => import('./features/seller/seller-dashboard.component').then(m => m.SellerDashboardComponent), canActivate: [authGuard] },
+  { path: 'driver', loadComponent: () => import('./features/driver/driver-dashboard.component').then(m => m.DriverDashboardComponent), canActivate: [authGuard] },
+  { path: '**', redirectTo: 'auth' }
+];
+```
+
+All routes use **lazy loading** via `loadComponent`. The `authGuard` checks role and redirects unauthorized access.
+
+---
+
+### 📱 SCREENS TO GENERATE
+
+---
+
+#### SCREEN 1 — AUTH (`auth.component.ts`)
+
+**Template structure (inline in component via `template: \`...\``):**
+
+* Full-page centered layout on `#F8F9FA` background
+* A toggle switcher (`Login` / `Sign Up`) using Angular `[(ngModel)]` or `signal()`-based state, styled as pill tabs with active state in Orange `#FF6B00`
+* **Role Selector Grid:** 3 equal columns using Tailwind `grid grid-cols-3 gap-3`. Each card is a standalone `role-card` component receiving `[role]` and `[selected]` inputs. Selected card gets `border-2 border-[#FF6B00]` and an orange icon tint.
+* **Reactive Form (`ReactiveFormsModule`):**
+  * Common fields: `name` (Sign Up only), `phone` (with regex validator `/^(\+?225|00225)?[0-9]{8,10}$/` for African format), `password`
+  * Conditional field groups revealed with `@if` (Angular 17 control flow):
+    * Buyer selected → `address: string`, `landmarks: string`
+    * Seller selected → `store_name: string`, `store_description: string`
+  * Driver has no extra fields
+* **Validation:** Real-time border feedback — invalid touched fields get `border-[#FF6B00]` ring + subtext error message in orange
+* **Submission:**
+  * Shows `shimmer-skeleton` overlay or inline micro-spinner while `ApiService.post()` is in flight
+  * On success: stores JWT via `AuthService`, triggers role-based redirect
+  * On error: triggers `ToastService.show('Login failed. Check your credentials.', 'error')`
+
+---
+
+#### SCREEN 2 — BUYER CATALOG (`catalog.component.ts`)
+
+**Layout:**
+
+* Sticky header: Left — city name (from `AuthService.currentUser$`), Right — avatar circle
+* Full-width search bar with debounced input (`debounceTime(300)` via RxJS) wired to filter the product list
+* **Filter Capsules:** Horizontal scrollable row of pills: `All`, `Wood`, `Leather`, `Fabric`. Active pill = Orange background + white text. Implemented with a `selectedMaterial` signal, filters the product list reactively.
+* **Product Grid:** `grid grid-cols-2 gap-4` of product cards. Each card:
+  * Rounded image (`rounded-2xl`, `object-cover`)
+  * Bold product name in `#1A1D20`
+  * Price formatted as `{{ product.price | number }} FCFA`
+  * Material pill badge: small `rounded-full` tag in light gray
+  * Entire card is clickable → opens Chat Panel
+
+**Chat Panel (Side Sheet / Bottom Sheet):**
+
+* Slides in from bottom using Angular `@trigger` animation or simple CSS transition class toggle
+* Top anchor: frozen product info card (image thumbnail + name + price)
+* Chat message list: scrollable `div` with messages aligned left (seller) / right (buyer) — `AsyncPipe` on an observable message stream
+* Text input + send button at bottom
+* **Confirm Order Button:** A floating sticky button at the bottom of the chat, shown only when `orderReady` signal is `true`:
+
+```html
+<button class="w-full bg-[#FF6B00] text-white rounded-2xl py-4 font-bold text-lg shadow-lg">
+  Confirm Order & Lock Payment {{ selectedProduct.price | number }} FCFA
+</button>
+```
+
+* On click: `ApiService.post<Order>('/api/orders/', payload)` with loading state → success toast → close chat panel
+
+---
+
+#### SCREEN 3 — SELLER DASHBOARD (`seller-dashboard.component.ts`)
+
+**Top Summary Section:**
+
+* 4 metric cards in a `grid grid-cols-2 gap-4`:
+  * Active Sales (count)
+  * Cancelled (count)
+  * Trust Score — rendered as a circular SVG progress gauge in Orange
+  * Wallet Balance — large number in Emerald Green `#2ECC71` with FCFA suffix
+* All metric values fetched via `ApiService.get()` on `ngOnInit` with shimmer placeholders while loading
+
+**Product Publishing Wizard (Stepper):**
+
+Use a `currentStep` signal (`signal<1 | 2 | 3>(1)`) to control step visibility with `@if`:
+
+* **Step 1 — Store Info:** Pre-filled `store_name` and `store_description` from `AuthService`. Editable. "Next" button.
+* **Step 2 — Product Details:**
+  * `name` input
+  * `price` input (number, min: 1) — validated in real-time, orange error if `<= 0`
+  * `material` — custom styled `<select>` or 3-button toggle for `wood / leather / fabric`
+  * "Next" button (disabled if invalid)
+* **Step 3 — Media Upload:**
+  * Drag-and-drop zone or click-to-upload `<input type="file" accept="image/*">`
+  * Before upload: placeholder icon centered in dashed `rounded-2xl` box
+  * After file selected: `FileReader` previews image in the same box
+  * "Publish Product" button triggers `ApiService.post('/api/products/', formData)` with multipart
+  * **Incident Handling:** If no image or price `<= 0`, block submission and show orange toast: `"Please upload a product image and set a valid price."`
+
+---
+
+#### SCREEN 4 — DRIVER DASHBOARD (`driver-dashboard.component.ts`)
+
+**Layout — Split Screen:**
+
+* **Top 45%:** Map placeholder container — `rounded-3xl` gray box with centered map pin SVG icon and subtle pulsing animation (CSS `animate-ping` on a dot). Label: `"Live GPS — Activating..."`. Real map integration point (Leaflet or Google Maps can be injected here).
+* **Profile Sub-header:** Driver name + trust score badge in Orange pill + availability toggle (`signal<boolean>`)
+* **Bottom 55%:** Scrollable mission queue
+
+**Mission Cards:**
+
+Each card in the queue displays:
+
+* Route: `[Pickup City] ➔ [Dropoff City]` in bold Anthracite
+* Earnings: `+ XXXX FCFA` in Emerald Green
+* Estimated distance in km
+* Two action buttons side by side:
+  * `[Accept]` — `bg-[#FF6B00]` solid, white text, `rounded-2xl`
+  * `[Decline]` — `border border-[#FF6B00]` outline only, Orange text, `rounded-2xl`
+
+**Active Navigation HUD (triggered on Accept):**
+
+* `activeMission` signal stores the accepted `Order`
+* UI transitions (CSS class toggle or `@if`) to full navigation view:
+  * Large map placeholder (expanded to 65%)
+  * Bottom card showing:
+    * Step indicator: `📦 Pickup at: [Seller Address]` → `🏠 Deliver to: [Buyer Address]`
+    * Status update buttons: `"Mark as Picked Up"` → `"Mark as Delivered"` — each triggers `ApiService.patch('/api/orders/<id>/', { status: ... })`
+    * Trust score gamification block: points earned, streak, level badge
+
+---
+
+### 🌀 GLOBAL UI REQUIREMENTS (Apply to ALL Screens)
+
+* **Shimmer Skeleton Component:** A reusable `shimmer-skeleton` standalone component rendering animated gray bars (`animate-pulse` Tailwind) matching the shape of the content being loaded. Accept `[lines]` and `[type]` inputs (`'card' | 'list' | 'text'`).
+* **Toast Banner Component:** Fixed bottom-center position, `z-50`, slide-up animation. Color-coded: error = soft red bg, success = green bg, warning = orange bg. Auto-dismiss via `setTimeout` in service.
+* **No NgModules anywhere.** All components use `standalone: true` with explicit `imports: []` arrays.
+* **All forms use `ReactiveFormsModule`** with `FormGroup` / `FormControl` / `Validators`.
+* **All HTTP calls use `AsyncPipe`** where possible to avoid manual subscriptions and memory leaks.
+* **Tailwind classes only** — no inline `style=""` attributes except for dynamic values like trust score arc length or wallet amount color.
+* **Angular Signals** (`signal()`, `computed()`, `effect()`) preferred over `BehaviorSubject` for local component state.
+
+---
+
+Generate each file completely and independently. Output production-ready, strictly typed TypeScript Angular 17+ code. No placeholders, no `// TODO` comments, no generic boilerplate. Every screen must be fully wired to the service layer, handle loading/error/empty states, and be visually consistent with the Swift Africa brand system.
