@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: angular-starter-api
+    runtime: node
+    buildCommand: pnpm install && pnpm -w run typecheck:libs && pnpm --filter @workspace/api-server run build
+    startCommand: node artifacts/api-server/dist/index.mjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: NPM_CONFIG_PRODUCTION
+        value: false
