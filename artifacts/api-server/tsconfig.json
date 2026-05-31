@@ -6,8 +6,6 @@
     "outDir": "dist",
     "rootDir": "src",
     "types": ["node"],
-    "module": "commonjs",
-    "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
